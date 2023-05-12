@@ -111,7 +111,7 @@ def main(
     for _ in range(16):
         print("\n###############################\n")
         prompts = input("Enter prompts separated by |: ").split("|")
-        if prompts[0].begins_with("Set LLaMA temperature ="):
+        if prompts[0].startswith("Set LLaMA temperature ="):
             _, t = prompts.split("=")
             temperature = int(t)
             continue
