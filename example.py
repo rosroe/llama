@@ -15,6 +15,33 @@ from fairscale.nn.model_parallel.initialize import initialize_model_parallel
 
 from llama import ModelArgs, Transformer, Tokenizer, LLaMA
 
+SAMPLE_PROMPTS = [
+    # For these prompts, the expected answer is the natural continuation of the prompt
+    "I believe the meaning of life is",
+    "Simply put, the theory of relativity states that ",
+    "Building a website can be done in 10 simple steps:\n",
+    # Few shot prompts: https://huggingface.co/blog/few-shot-learning-gpt-neo-and-inference-api
+    """Tweet: "I hate it when my phone battery dies."
+Sentiment: Negative
+###
+Tweet: "My day has been 👍"
+Sentiment: Positive
+###
+Tweet: "This is the link to the article"
+Sentiment: Neutral
+###
+Tweet: "This new music video was incredibile"
+Sentiment:""",
+        """Translate English to French:
+
+sea otter => loutre de mer
+
+peppermint => menthe poivrée
+
+plush girafe => girafe peluche
+
+cheese =>""",
+    ]
 
 def setup_model_parallel() -> Tuple[int, int]:
     local_rank = int(os.environ.get("LOCAL_RANK", -1))
@@ -69,50 +96,39 @@ def main(
     temperature: float = 0.8,
     top_p: float = 0.95,
     max_seq_len: int = 512,
-    max_batch_size: int = 32,
+    max_batch_size: int = 4,
+    logging_rank = 0
 ):
     local_rank, world_size = setup_model_parallel()
-    if local_rank > 0:
+    if local_rank > logging_rank:
         sys.stdout = open(os.devnull, "w")
 
     generator = load(
         ckpt_dir, tokenizer_path, local_rank, world_size, max_seq_len, max_batch_size
     )
 
-    prompts = [
-        # For these prompts, the expected answer is the natural continuation of the prompt
-        "I believe the meaning of life is",
-        "Simply put, the theory of relativity states that ",
-        "Building a website can be done in 10 simple steps:\n",
-        # Few shot prompts: https://huggingface.co/blog/few-shot-learning-gpt-neo-and-inference-api
-        """Tweet: "I hate it when my phone battery dies."
-Sentiment: Negative
-###
-Tweet: "My day has been 👍"
-Sentiment: Positive
-###
-Tweet: "This is the link to the article"
-Sentiment: Neutral
-###
-Tweet: "This new music video was incredibile"
-Sentiment:""",
-        """Translate English to French:
+    system_prompts = ["." * max_seq_len, ] * max_batch_size
+    for _ in range(16):
+        print("\n###############################\n")
+        prompts = input("Enter prompts separated by |: ").split("|")
+        for i, p in enumerate(prompts[:max_batch_size]):
+            s = system_prompts[i] + p
+            system_prompts[i] = s[-max_seq_len:]
 
-sea otter => loutre de mer
+        results = generator.generate(
+            system_prompts, max_gen_len=256, temperature=temperature, top_p=top_p
+        )
 
-peppermint => menthe poivrée
-
-plush girafe => girafe peluche
-
-cheese =>""",
-    ]
-    results = generator.generate(
-        prompts, max_gen_len=256, temperature=temperature, top_p=top_p
-    )
-
-    for result in results:
-        print(result)
-        print("\n==================================\n")
+        for i, prompt in enumerate(system_prompts):
+            if set(prompt) == {'.'}:
+                continue
+            p = "PROMPT: " + prompt
+            print(p)
+            a = "ANSWER: " + results[i]
+            print(a)
+            print("\n==================================\n")
+            s = system_prompts[i] + a + " PROMPT: "
+            system_prompts[i] = s[-max_seq_len:]
 
 
 if __name__ == "__main__":
