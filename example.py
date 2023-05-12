@@ -111,6 +111,10 @@ def main(
     for _ in range(16):
         print("\n###############################\n")
         prompts = input("Enter prompts separated by |: ").split("|")
+        if prompts.begins_with("Set LLaMA temperature ="):
+            _, t = prompts.split("=")
+            temperature = int(t)
+            continue
         for i, p in enumerate(prompts[:max_batch_size]):
             s = system_prompts[i] + p
             system_prompts[i] = s[-max_seq_len:]
@@ -122,12 +126,9 @@ def main(
         for i, prompt in enumerate(system_prompts):
             if set(prompt) == {'.'}:
                 continue
-            p = "PROMPT: " + prompt
-            print(p)
-            a = "ANSWER: " + results[i]
-            print(a)
+            print(results[i])
             print("\n==================================\n")
-            s = system_prompts[i] + a + " PROMPT: "
+            s = prompt +  "ANSWER: " + results[i] + "\n"
             system_prompts[i] = s[-max_seq_len:]
 
 
