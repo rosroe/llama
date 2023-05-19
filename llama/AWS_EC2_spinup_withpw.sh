@@ -16,6 +16,9 @@ export PYTHONPATH=~/llama
 sudo apt update
 sudo apt install s3fs
 
+######################
+######################
+
 sudo s3fs rosroe1 $MNTDIR -o passwd_file=./.passwd-s3fs -o allow_other
 
 LLAMADIR="$MNTDIR/llama/data_tmp"
@@ -27,4 +30,4 @@ cd ~/llama
 pip install -r requirements.txt
 
 git checkout feature/simple_prompt
-torchrun --nproc_per_node 1 example.py $LLAMADIR/7B/ $LLAMADIR/tokenizer.model --max_batch_size 2
+torchrun --nproc_per_node 1 example.py $LLAMADIR/7B/ $LLAMADIR/tokenizer.model --max_batch_size 1 -- max_gen_len 16
