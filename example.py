@@ -128,7 +128,7 @@ def main(
             if set(prompt) == {'.'}:
                 continue
             print("\n==================================\n")
-            s = prompt +  "Assistant: " + results[i] + "\n"
+            s = prompt +  "Assistant: " + results[i]
             system_prompts[i] = s[-max_seq_len:]
             print(s)
 
