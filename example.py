@@ -117,7 +117,7 @@ def main(
             temperature = int(t)
             continue
         for i, p in enumerate(prompts[:max_batch_size]):
-            s = system_prompts[i] + " Human: " + p
+            s = system_prompts[i] + p
             system_prompts[i] = s[-max_seq_len:]
 
         results = generator.generate(
