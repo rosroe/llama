@@ -127,10 +127,10 @@ def main(
         for i, prompt in enumerate(system_prompts):
             if set(prompt) == {'.'}:
                 continue
+            print(results[i])
             print("\n==================================\n")
-            s = prompt + results[i]
-            system_prompts[i] = results[i][-max_seq_len:]
-            print(system_prompts[i])
+            s = prompt +  "Assistant: " + results[i]
+            system_prompts[i] = s[-max_seq_len:]
 
 
 if __name__ == "__main__":
