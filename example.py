@@ -130,7 +130,7 @@ def main(
             print("\n==================================\n")
             s = prompt +  "Assistant: " + results[i] + "\n"
             system_prompts[i] = s[-max_seq_len:]
-            print(system_prompts[i])
+            print(s)
 
 
 if __name__ == "__main__":
