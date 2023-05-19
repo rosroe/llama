@@ -97,6 +97,7 @@ def main(
     top_p: float = 0.95,
     max_seq_len: int = 512,
     max_batch_size: int = 4,
+    max_gen_len: int = 64,
     logging_rank = 0
 ):
     local_rank, world_size = setup_model_parallel()
@@ -116,20 +117,20 @@ def main(
             temperature = int(t)
             continue
         for i, p in enumerate(prompts[:max_batch_size]):
-            s = system_prompts[i] + p
+            s = system_prompts[i] + "Human: " + p
             system_prompts[i] = s[-max_seq_len:]
 
         results = generator.generate(
-            system_prompts, max_gen_len=256, temperature=temperature, top_p=top_p
+            system_prompts, max_gen_len=max_gen_len, temperature=temperature, top_p=top_p
         )
 
         for i, prompt in enumerate(system_prompts):
             if set(prompt) == {'.'}:
                 continue
-            print(results[i])
             print("\n==================================\n")
-            s = "Human: " + prompt +  "Assistant: " + results[i] + "\n"
+            s = prompt +  "Assistant: " + results[i] + "\n"
             system_prompts[i] = s[-max_seq_len:]
+            print(system_prompts[i])
 
 
 if __name__ == "__main__":
