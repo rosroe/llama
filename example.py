@@ -128,7 +128,7 @@ def main(
                 continue
             print(results[i])
             print("\n==================================\n")
-            s = prompt +  "ANSWER: " + results[i] + "\n"
+            s = "Human: " + prompt +  "Assistant: " + results[i] + "\n"
             system_prompts[i] = s[-max_seq_len:]
 
 
