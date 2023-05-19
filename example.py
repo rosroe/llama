@@ -129,8 +129,8 @@ def main(
                 continue
             print("\n==================================\n")
             s = prompt + results[i]
-            system_prompts[i] = s[-max_seq_len:]
-            print(s)
+            system_prompts[i] = results[i][-max_seq_len:]
+            print(system_prompts[i])
 
 
 if __name__ == "__main__":
